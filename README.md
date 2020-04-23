@@ -1,2 +1,4 @@
-# COVID_19_World_Plot
-Script that returns a 3D plot using Plotly of the World situation about COVID19. 
+# COVID-19 World Plot
+![Imgur](https://i.imgur.com/UiGeZMM.png)
+
+Script that makes a 3D World plot about COVID-19 using Plotly. 
