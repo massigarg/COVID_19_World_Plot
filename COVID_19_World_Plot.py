@@ -5,25 +5,27 @@ import pycountry
 import plotly.graph_objs as go
 from plotly.offline import plot
 
+'''
+All data from https://covid.ourworldindata.org/
+'''
+
 today = datetime.datetime.today().strftime("%d-%m-%Y")  # aggiungere label per i csv
+
 
 # #Total Deaths
 urllib.request.urlretrieve("https://covid.ourworldindata.org/data/ecdc/total_deaths.csv", "total_deaths.csv")
 df_total_deaths = pd.read_csv("total_deaths.csv", parse_dates=["date"])
-df_total_deaths["date"] = pd.to_datetime(df_total_deaths["date"]).dt.strftime("%d-%m-%y")
-df_total_deaths = df_total_deaths.fillna(0)
+df_total_deaths = df_total_deaths.fillna(method="bfill")
 
 # #Total Confirmed Cases
 urllib.request.urlretrieve("https://covid.ourworldindata.org/data/ecdc/total_cases.csv", "total_cases.csv")
 df_total_cases = pd.read_csv("total_cases.csv", parse_dates=["date"])
-df_total_cases["date"] = pd.to_datetime(df_total_cases["date"]).dt.strftime("%d-%m-%y")
-df_total_cases = df_total_cases.fillna(0)
+df_total_cases = df_total_cases.fillna(method="bfill")
 
 # #New Confirmed Cases
 urllib.request.urlretrieve("https://covid.ourworldindata.org/data/ecdc/new_cases.csv", "new_cases.csv")
 df_new_cases = pd.read_csv("new_cases.csv", parse_dates=["date"])
-df_new_cases["date"] = pd.to_datetime(df_new_cases["date"]).dt.strftime("%d-%m-%y")
-df_new_cases = df_new_cases.fillna(0)
+df_new_cases = df_new_cases.fillna(method="bfill")
 
 df_total_deaths_copy = df_total_deaths.copy()
 df_total_cases_copy = df_total_cases.copy()
@@ -31,6 +33,7 @@ df_new_cases_copy = df_new_cases.copy()
 
 df_list = [df_total_deaths_copy, df_total_cases_copy, df_new_cases_copy]
 
+#List of coutries with different name from pycoutry library
 countries_to_change_name = {
     "Czech Republic": "Czechia",
     "Russia": "Russian Federation",
@@ -55,6 +58,7 @@ countries_to_change_name = {
     "Vietnam": "Viet Nam"
 }
 
+#Dropping all the countries not in the DF
 for i in df_list:
     i.rename(countries_to_change_name, axis="columns", inplace=True)
 
@@ -73,6 +77,9 @@ df_new_cases_copy.drop(names_not_in_list, axis=1, inplace=True)
 
 
 def death_rate():
+    '''
+    return: List. Deaths rate for each country in %
+    '''
     total_deaths_list = []
     for i in df_total_deaths_copy.iloc[-1]:
         total_deaths_list.append(i)
@@ -96,6 +103,9 @@ def get_countries_for_world_plot():
 
 
 def get_alpha_code():
+    '''
+    return: Dictionary. To each country correspond an alpha 3 code
+    '''
     alpha_code_dict = {}
     for country_db in df_total_deaths_copy.columns.values:
         for country in pycountry.countries:
@@ -106,6 +116,9 @@ def get_alpha_code():
 
 
 def get_alpha_code_list():
+    '''
+    return: List. List of the coutries code
+    '''
     alpha_code_list = []
     for i in get_alpha_code().values():
         alpha_code_list.append(i)
@@ -113,10 +126,11 @@ def get_alpha_code_list():
 
 
 # EXTRA INFO
+#Totale Cases list
 total_cases_list = []
 for i in df_total_cases_copy.iloc[-1]:
     total_cases_list.append(str(int(i)))
-
+#New Cases
 new_cases_list = []
 for i in df_new_cases_copy.iloc[-1]:
     new_cases_list.append(str(int(i)))
@@ -140,7 +154,7 @@ def world_plot():
                 locations=get_alpha_code_list(),
                 z=df_total_deaths_copy.iloc[-1],
                 text=df_text,
-                colorbar={"title": "Total Deaths"},
+                colorbar={"title": "Deaths"},
                 colorscale=[[0, 'green'], [0.5, 'yellow'], [1.0, 'red']]
                 )
 
